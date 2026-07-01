@@ -21,7 +21,7 @@
     <link rel="stylesheet" href="style.css">
     
     <!-- Application Logic -->
-    <script src="app.js?v=3" defer></script>
+    <script src="app.js?v=4" defer></script>
 </head>
 <body>
     <div class="app-container">
@@ -47,9 +47,6 @@
                 </button>
                 <button class="nav-btn" data-tab="part3" id="btn-tab-part3">
                     <i class="fa-solid fa-people-arrows"></i> <span>Part 3 (対話・要約)</span>
-                </button>
-                <button class="nav-btn" data-tab="recorder" id="btn-tab-recorder">
-                    <i class="fa-solid fa-microphone-lines"></i> <span>シャドーイング録音</span>
                 </button>
             </nav>
             
@@ -214,53 +211,6 @@
                     </div>
                 </div>
 
-                <!-- Tab: Recorder -->
-                <div class="tab-pane" id="pane-recorder">
-                    <div class="recorder-layout">
-                        <!-- Recording Console -->
-                        <div class="recorder-console">
-                            <div class="console-header">
-                                <h3>シャドーイング・録音スタジオ</h3>
-                                <p>マイクを使って自分の音読を録音し、ネイティブの発音と聞き比べて練習しましょう。</p>
-                            </div>
-                            
-                            <div class="visualizer-container">
-                                <canvas id="visualizer" width="500" height="120"></canvas>
-                                <div class="recording-time" id="recording-timer">00:00</div>
-                            </div>
-                            
-                            <div class="recorder-controls">
-                                <button class="record-btn" id="record-btn-start">
-                                    <i class="fa-solid fa-microphone"></i> <span>録音開始</span>
-                                </button>
-                                <button class="record-btn stop hide" id="record-btn-stop">
-                                    <i class="fa-solid fa-square"></i> <span>録音停止</span>
-                                </button>
-                            </div>
-
-                            <div class="recorder-tips">
-                                <h4>💡 シャドーイングのコツ</h4>
-                                <ul>
-                                    <li>音声を聞きながら、0.5秒ほど遅れて影のように後ろを追いかけて発音します。</li>
-                                    <li>スクリプトの表示/非表示を切り替えながら、テキストを見ずに言えるまで繰り返しましょう。</li>
-                                    <li>録音した自分の英語の「音の連結（リエゾン）」や「強弱のイントネーション」がネイティブと同じになっているか耳を澄ませてみましょう。</li>
-                                </ul>
-                            </div>
-                        </div>
-
-                        <!-- Playlist of recordings -->
-                        <div class="recorder-playlist">
-                            <h3>マイ録音ライブラリ</h3>
-                            <div class="playlist-empty" id="playlist-empty-state">
-                                <i class="fa-solid fa-folder-open"></i>
-                                <p>まだ録音データがありません。<br>上のマイクボタンを押して録音を開始してください。</p>
-                            </div>
-                            <div class="playlist-items" id="recordings-list">
-                                <!-- Recorded items will appear here -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
             </div>
         </main>

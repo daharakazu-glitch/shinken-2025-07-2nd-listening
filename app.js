@@ -283,25 +283,11 @@ let activeTab = "dashboard";
 let currentTrack = null; // 'track1', 'track2', 'track3'
 let currentAudio = null; // Audio element reference
 let userAnswers = {}; // Store user selected options: { questionId: selectedIndex }
-let recorderState = {
-    mediaRecorder: null,
-    audioChunks: [],
-    isRecording: false,
-    startTime: 0,
-    timerInterval: null,
-    recordings: [] // list of objects: { id, url, name, date }
-};
+let recordedClips = {}; // Store inline recorded audio clips: { questionId: blobUrl }
 
 // Load saved recordings from LocalStorage on start
 function loadRecordings() {
-    const saved = localStorage.getItem("shinken_recordings");
-    if (saved) {
-        // We can't save the Blob URLs themselves since they become invalid across page reloads.
-        // But we store the metadata, and notify the user they are metadata placeholders, or we just init empty.
-        // For demonstration and convenience, we'll maintain the list dynamically in-memory, but clear on reload
-        // to prevent broken Blob URL pointers.
-        recorderState.recordings = [];
-    }
+    recordedClips = {};
 }
 
 // Initialize Application Elements
@@ -524,6 +510,19 @@ function renderPartQuestions(partKey) {
             </div>
             
             ${questionBodyHtml}
+            
+            <!-- Inline Audio Recorder Widget -->
+            <div class="q-recorder-box">
+                <button class="btn btn-secondary btn-mini btn-record-inline" data-qid="${q.id}" id="btn-record-${q.id}">
+                    <i class="fa-solid fa-microphone"></i> 録音する
+                </button>
+                <div class="inline-record-player hide" id="player-container-${q.id}">
+                    <audio class="inline-audio-player" id="rec-audio-${q.id}" controls></audio>
+                    <button class="btn-delete-inline-record" data-qid="${q.id}" id="btn-delete-rec-${q.id}" title="録音を削除">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>
+            </div>
             
             <div class="q-actions">
                 <div class="toggles-group">
@@ -917,206 +916,115 @@ function updateDashboardStats() {
     // Update elements
     document.getElementById("correct-rate-val").textContent = `${correctRate}%`;
     document.getElementById("stats-correct-ratio").textContent = `${correctCount} / ${totalQuestions}`;
-    document.getElementById("stats-recordings-count").textContent = recorderState.recordings.length;
-}
-
-// Setup shadowing voice recorder using MediaRecorder API
-function setupRecorder() {
-    const startBtn = document.getElementById("record-btn-start");
-    const stopBtn = document.getElementById("record-btn-stop");
-    const timerLabel = document.getElementById("recording-timer");
     
-    // Wave visualizer elements
-    const canvas = document.getElementById("visualizer");
-    const canvasCtx = canvas.getContext("2d");
-    let audioCtx = null;
-    let analyser = null;
-    let dataArray = null;
-    let source = null;
-    let animationFrameId = null;
-
-    startBtn.addEventListener("click", async () => {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            
-            // Setup recording chunks
-            recorderState.audioChunks = [];
-            recorderState.mediaRecorder = new MediaRecorder(stream);
-            
-            recorderState.mediaRecorder.ondataavailable = (event) => {
-                if (event.data.size > 0) {
-                    recorderState.audioChunks.push(event.data);
-                }
-            };
-
-            recorderState.mediaRecorder.onstop = () => {
-                const audioBlob = new Blob(recorderState.audioChunks, { type: 'audio/webm' });
-                const audioUrl = URL.createObjectURL(audioBlob);
-                
-                // Add to list
-                const now = new Date();
-                const timeString = `${now.getHours()}:${now.getMinutes() < 10 ? '0' : ''}${now.getMinutes()}`;
-                const dateString = `${now.getMonth() + 1}/${now.getDate()} ${timeString}`;
-                
-                const recId = `rec_${Date.now()}`;
-                const partLabel = currentTrack ? (currentTrack === 'track1' ? 'Part 1' : currentTrack === 'track2' ? 'Part 2' : 'Part 3') : 'フリー';
-                
-                recorderState.recordings.unshift({
-                    id: recId,
-                    url: audioUrl,
-                    name: `録音練習 - ${partLabel} (${timeString})`,
-                    date: dateString
-                });
-
-                renderRecordingsList();
-                updateDashboardStats();
-                
-                // Stop all tracks on the stream to release microphone icon
-                stream.getTracks().forEach(track => track.stop());
-
-                // Stop Canvas visualization animation
-                if (animationFrameId) {
-                    cancelAnimationFrame(animationFrameId);
-                }
-                
-                // Reset canvas display
-                canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
-                canvasCtx.fillStyle = '#f8fafc';
-                canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
-                canvasCtx.strokeStyle = '#cbd5e1';
-                canvasCtx.beginPath();
-                canvasCtx.moveTo(0, canvas.height / 2);
-                canvasCtx.lineTo(canvas.width, canvas.height / 2);
-                canvasCtx.stroke();
-            };
-
-            // Setup audio context visualizer
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            analyser = audioCtx.createAnalyser();
-            source = audioCtx.createMediaStreamSource(stream);
-            source.connect(analyser);
-            
-            analyser.fftSize = 256;
-            const bufferLength = analyser.frequencyBinCount;
-            dataArray = new Uint8Array(bufferLength);
-
-            // Start visualizer animation
-            drawVisualizer();
-
-            // Start timer
-            recorderState.startTime = Date.now();
-            recorderState.timerInterval = setInterval(() => {
-                const diff = Date.now() - recorderState.startTime;
-                const totalSec = Math.floor(diff / 1000);
-                const mm = Math.floor(totalSec / 60).toString().padStart(2, '0');
-                const ss = (totalSec % 60).toString().padStart(2, '0');
-                timerLabel.textContent = `${mm}:${ss}`;
-            }, 1000);
-
-            // Trigger actual record
-            recorderState.mediaRecorder.start();
-            recorderState.isRecording = true;
-
-            // Update UI buttons
-            startBtn.classList.add("hide");
-            stopBtn.classList.remove("hide");
-            timerLabel.style.color = "var(--incorrect)";
-
-        } catch (err) {
-            console.error("Microphone access failed:", err);
-            alert("マイクへのアクセス権限がないか、マイクが見つかりません。マイクの設定を確認してください。");
-        }
-    });
-
-    stopBtn.addEventListener("click", () => {
-        if (recorderState.mediaRecorder && recorderState.isRecording) {
-            recorderState.mediaRecorder.stop();
-            recorderState.isRecording = false;
-
-            // Clear timer
-            clearInterval(recorderState.timerInterval);
-            timerLabel.textContent = "00:00";
-
-            // Update UI buttons
-            startBtn.classList.remove("hide");
-            stopBtn.classList.add("hide");
-            timerLabel.style.color = "var(--text-muted)";
-        }
-    });
-
-    // Draw visualizer frequency waveform bars
-    function drawVisualizer() {
-        if (!recorderState.isRecording) return;
-        
-        animationFrameId = requestAnimationFrame(drawVisualizer);
-        analyser.getByteFrequencyData(dataArray);
-
-        canvasCtx.fillStyle = '#f8fafc';
-        canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
-
-        const barWidth = (canvas.width / dataArray.length) * 2.5;
-        let barHeight;
-        let x = 0;
-
-        for (let i = 0; i < dataArray.length; i++) {
-            barHeight = dataArray[i] / 2;
-
-            // Color gradient from Indigo to Teal
-            const red = 99 + (i * 2);
-            const green = 102 + (i * 1);
-            const blue = 241 - (i * 2);
-            canvasCtx.fillStyle = `rgb(${red},${green},${blue})`;
-
-            canvasCtx.fillRect(x, canvas.height - barHeight, barWidth - 2, barHeight);
-            x += barWidth;
-        }
+    const recCount = Object.keys(recordedClips).length;
+    const recordingsCountElem = document.getElementById("stats-recordings-count");
+    if (recordingsCountElem) {
+        recordingsCountElem.textContent = recCount;
     }
 }
 
-// Render dynamic elements for recorded playlist
-function renderRecordingsList() {
-    const listContainer = document.getElementById("recordings-list");
-    const emptyState = document.getElementById("playlist-empty-state");
+// State object for recording sessions
+let activeMediaRecorder = null;
+let activeRecordingQid = null;
+let activeAudioChunks = [];
 
-    if (recorderState.recordings.length === 0) {
-        listContainer.innerHTML = "";
-        emptyState.classList.remove("hide");
+// Setup voice recorders using standard simple MediaRecorder API
+function setupRecorder() {
+    // Event delegation on document body to handle clicks on dynamically rendered record buttons
+    document.body.addEventListener("click", async (e) => {
+        // Record toggle button clicked
+        const recordBtn = e.target.closest(".btn-record-inline");
+        if (recordBtn) {
+            const qid = recordBtn.getAttribute("data-qid");
+            handleInlineRecordToggle(qid, recordBtn);
+            return;
+        }
+
+        // Delete button clicked
+        const deleteBtn = e.target.closest(".btn-delete-inline-record");
+        if (deleteBtn) {
+            const qid = deleteBtn.getAttribute("data-qid");
+            handleInlineRecordDelete(qid);
+            return;
+        }
+    });
+}
+
+// Toggle recording state for specific question
+async function handleInlineRecordToggle(qid, btn) {
+    if (activeMediaRecorder && activeRecordingQid !== qid) {
+        alert("すでに別の問題で録音が実行中です。まずそちらを停止してください。");
         return;
     }
 
-    emptyState.classList.add("hide");
-    listContainer.innerHTML = "";
+    // Stop active recording if clicked on the active recorder button
+    if (activeMediaRecorder && activeRecordingQid === qid) {
+        activeMediaRecorder.stop();
+        return;
+    }
 
-    recorderState.recordings.forEach(rec => {
-        const item = document.createElement("div");
-        item.className = "playlist-item";
-        item.id = `item-${rec.id}`;
+    // Start recording
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        activeAudioChunks = [];
+        activeMediaRecorder = new MediaRecorder(stream);
+        activeRecordingQid = qid;
 
-        item.innerHTML = `
-            <div class="playlist-item-meta">
-                <span class="playlist-item-title">${rec.name}</span>
-                <span class="playlist-item-date">${rec.date}</span>
-            </div>
-            <div class="playlist-item-audio-row">
-                <audio class="playlist-item-audio" controls src="${rec.url}"></audio>
-                <button class="btn-delete-record" data-id="${rec.id}" title="この録音を削除">
-                    <i class="fa-solid fa-trash-can"></i>
-                </button>
-            </div>
-        `;
+        activeMediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+                activeAudioChunks.push(event.data);
+            }
+        };
 
-        listContainer.appendChild(item);
-    });
+        activeMediaRecorder.onstop = () => {
+            const audioBlob = new Blob(activeAudioChunks, { type: 'audio/webm' });
+            const audioUrl = URL.createObjectURL(audioBlob);
+            
+            // Save URL to global map
+            recordedClips[qid] = audioUrl;
+            
+            // Set playback src and show player wrapper
+            const audioPlayer = document.getElementById(`rec-audio-${qid}`);
+            const playerContainer = document.getElementById(`player-container-${qid}`);
+            audioPlayer.src = audioUrl;
+            playerContainer.classList.remove("hide");
 
-    // Delete item click listeners
-    const deleteBtns = listContainer.querySelectorAll(".btn-delete-record");
-    deleteBtns.forEach(btn => {
-        btn.addEventListener("click", () => {
-            const recId = btn.getAttribute("data-id");
-            // Remove from array state
-            recorderState.recordings = recorderState.recordings.filter(rec => rec.id !== recId);
-            renderRecordingsList();
+            // Reset record button styling
+            btn.classList.remove("recording");
+            btn.innerHTML = '<i class="fa-solid fa-microphone"></i> 録音する';
+            
+            // Release microphone
+            stream.getTracks().forEach(track => track.stop());
+            
+            activeMediaRecorder = null;
+            activeRecordingQid = null;
             updateDashboardStats();
-        });
-    });
+        };
+
+        // Update UI to recording state
+        btn.classList.add("recording");
+        btn.innerHTML = '<i class="fa-solid fa-square"></i> 録音停止';
+
+        activeMediaRecorder.start();
+    } catch (err) {
+        console.error("Microphone access failed:", err);
+        alert("マイクへのアクセスが拒否されたか、マイクが見つかりません。");
+    }
+}
+
+// Delete recording for specific question
+function handleInlineRecordDelete(qid) {
+    if (recordedClips[qid]) {
+        URL.revokeObjectURL(recordedClips[qid]);
+        delete recordedClips[qid];
+    }
+    
+    const audioPlayer = document.getElementById(`rec-audio-${qid}`);
+    const playerContainer = document.getElementById(`player-container-${qid}`);
+    audioPlayer.removeAttribute("src");
+    audioPlayer.load();
+    playerContainer.classList.add("hide");
+    
+    updateDashboardStats();
 }

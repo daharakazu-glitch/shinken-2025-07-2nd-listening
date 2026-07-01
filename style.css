@@ -54,22 +54,22 @@ body {
 /* English Typography Overrides for Classroom Visibility */
 .q-text {
     font-family: 'Times New Roman', Times, serif !important;
-    font-size: 20px !important; /* Large, bold English for projectors */
-    font-weight: 600 !important;
+    font-size: 24px !important; /* Large, bold English for projectors (2 sizes larger) */
+    font-weight: 700 !important;
     line-height: 1.5;
     color: var(--text-main);
 }
 
 .choices-list .choice-text {
     font-family: 'Times New Roman', Times, serif !important;
-    font-size: 18px !important; /* Clear choice texts */
+    font-size: 22px !important; /* Clear choice texts (2 sizes larger) */
     line-height: 1.4;
 }
 
 /* Make choice translation text a bit smaller and gray */
 .choices-list .choice-text span.jp-translation-inline {
-    font-family: 'Inter', 'Noto Sans JP', sans-serif !important;
-    font-size: 13px !important;
+    font-family: 'Times New Roman', Times, serif, 'Noto Sans JP', sans-serif !important;
+    font-size: 15px !important;
     color: var(--text-muted);
     font-weight: normal;
     display: inline-block;
@@ -78,18 +78,18 @@ body {
 
 [id^="panel-script-"] .panel-content {
     font-family: 'Times New Roman', Times, serif !important;
-    font-size: 19px !important; /* Read scripts easily in class */
+    font-size: 22px !important; /* Read scripts easily in class (2 sizes larger) */
     line-height: 1.6;
 }
 
 .text-answer-input {
     font-family: 'Times New Roman', Times, serif !important;
-    font-size: 18px !important;
+    font-size: 22px !important;
 }
 
 .modelAnswers li {
     font-family: 'Times New Roman', Times, serif !important;
-    font-size: 18px !important;
+    font-size: 22px !important;
     font-weight: 500;
 }
 
@@ -1369,3 +1369,59 @@ audio::-webkit-media-controls-panel {
         padding: 20px;
     }
 }
+
+/* Global Typography Override for Times New Roman English Fallback */
+body, button, input, select, textarea {
+    font-family: 'Times New Roman', Times, serif, 'Noto Sans JP', sans-serif !important;
+}
+
+/* Inline Audio Recorder Box inside Question Card */
+.q-recorder-box {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 16px;
+    margin-bottom: 8px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--border-color);
+}
+
+.btn-record-inline {
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-weight: 700;
+}
+.btn-record-inline.recording {
+    background-color: var(--incorrect) !important;
+    border-color: var(--incorrect) !important;
+    color: #fff !important;
+    animation: pulseRecording 1.5s infinite;
+}
+
+.inline-record-player {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-grow: 1;
+    max-width: 320px;
+    animation: slideDown 0.25s ease;
+}
+.inline-audio-player {
+    flex-grow: 1;
+    height: 28px;
+}
+.btn-delete-inline-record {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 4px;
+    border-radius: 4px;
+    transition: var(--transition);
+}
+.btn-delete-inline-record:hover {
+    color: var(--incorrect);
+    background-color: rgba(239, 68, 68, 0.08);
+}
+
