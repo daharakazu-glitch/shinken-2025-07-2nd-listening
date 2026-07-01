@@ -305,14 +305,20 @@ function loadRecordings() {
 }
 
 // Initialize Application Elements
-document.addEventListener("DOMContentLoaded", () => {
+function initApp() {
     loadRecordings();
     initUI();
     renderAllQuestions();
     setupAudioControllers();
     setupRecorder();
     updateDashboardStats();
-});
+}
+
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initApp);
+} else {
+    initApp();
+}
 
 // Setup tab switches and modal views
 function initUI() {
