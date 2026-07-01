@@ -857,7 +857,11 @@ function changeTrack(trackKey) {
     currentAudio.onended = () => {
         playBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
         document.querySelector(".track-icon i").classList.remove("fa-spin-slow");
+        updatePlayButtonsUI(false);
     };
+    
+    // Reset all other shortcut play buttons on track change
+    updatePlayButtonsUI(false);
 }
 
 // Play / Pause Toggle trigger
@@ -875,6 +879,7 @@ function togglePlayAudio() {
             .then(() => {
                 playBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
                 discIcon.classList.add("fa-spin-slow");
+                updatePlayButtonsUI(true);
             })
             .catch(err => {
                 console.error("Audio play failed:", err);
@@ -884,7 +889,25 @@ function togglePlayAudio() {
         currentAudio.pause();
         playBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
         discIcon.classList.remove("fa-spin-slow");
+        updatePlayButtonsUI(false);
     }
+}
+
+// Update all inline shortcut play buttons on page matching current track
+function updatePlayButtonsUI(isPlaying) {
+    const playShortcuts = document.querySelectorAll(".btn-play-shortcut");
+    playShortcuts.forEach(btn => {
+        const track = btn.getAttribute("data-track");
+        if (track === currentTrack && isPlaying) {
+            btn.innerHTML = '<i class="fa-solid fa-pause"></i> 一時停止';
+            btn.classList.add("btn-primary");
+            btn.classList.remove("btn-secondary");
+        } else {
+            btn.innerHTML = '<i class="fa-solid fa-play"></i> 音声を聞く';
+            btn.classList.remove("btn-primary");
+            btn.classList.add("btn-secondary");
+        }
+    });
 }
 
 // Convert seconds to MM:SS string
