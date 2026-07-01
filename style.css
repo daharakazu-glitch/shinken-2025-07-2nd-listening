@@ -67,7 +67,7 @@ body {
 }
 
 /* Make choice translation text a bit smaller and gray */
-.choices-list .choice-text span.jp-translation-inline {
+.choices-list .choice-text span.choice-jp-translation {
     font-family: 'Times New Roman', Times, serif, 'Noto Sans JP', sans-serif !important;
     font-size: 15px !important;
     color: var(--text-muted);

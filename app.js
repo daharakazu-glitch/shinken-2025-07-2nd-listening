@@ -491,12 +491,20 @@ function renderPartQuestions(partKey) {
                 ${imageHtml}
                 
                 <div class="choices-list">
-                    ${q.choices.map((choice, cIdx) => `
-                        <div class="choice-item" data-qid="${q.id}" data-idx="${cIdx}" id="choice-${q.id}-${cIdx}">
-                            <div class="choice-marker">${cIdx + 1}</div>
-                            <div class="choice-text">${choice}</div>
-                        </div>
-                    `).join("")}
+                    ${q.choices.map((choice, cIdx) => {
+                        const match = choice.match(/^(.*?)\s*\(([^)]+)\)\s*$/);
+                        const englishPart = match ? match[1] : choice;
+                        const japanesePart = match ? `(${match[2]})` : "";
+                        return `
+                            <div class="choice-item" data-qid="${q.id}" data-idx="${cIdx}" id="choice-${q.id}-${cIdx}">
+                                <div class="choice-marker">${cIdx + 1}</div>
+                                <div class="choice-text">
+                                    <span>${englishPart}</span>
+                                    ${japanesePart ? `<span class="choice-jp-translation hide" id="choice-jp-${q.id}-${cIdx}">${japanesePart}</span>` : ""}
+                                </div>
+                            </div>
+                        `;
+                    }).join("")}
                 </div>
             `;
         }
@@ -712,13 +720,19 @@ function checkAnswer(qid, partKey) {
         const isCorrect = (userAnswer === qData.correctAnswer);
         userAnswers[qid + "_correct"] = isCorrect;
 
-        // Color choices to show feedback
+        // Color choices to show feedback and reveal translations
         qData.choices.forEach((_, cIdx) => {
             const item = document.getElementById(`choice-${qid}-${cIdx}`);
             if (cIdx === qData.correctAnswer) {
                 item.classList.add("correct");
             } else if (cIdx === userAnswer && !isCorrect) {
                 item.classList.add("incorrect");
+            }
+            
+            // Reveal the Japanese translation span
+            const jpSpan = document.getElementById(`choice-jp-${qid}-${cIdx}`);
+            if (jpSpan) {
+                jpSpan.classList.remove("hide");
             }
         });
     }
