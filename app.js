@@ -981,9 +981,9 @@ function setupRecorder() {
                 
                 // Reset canvas display
                 canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
-                canvasCtx.fillStyle = '#050811';
+                canvasCtx.fillStyle = '#f8fafc';
                 canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
-                canvasCtx.strokeStyle = '#1e293b';
+                canvasCtx.strokeStyle = '#cbd5e1';
                 canvasCtx.beginPath();
                 canvasCtx.moveTo(0, canvas.height / 2);
                 canvasCtx.lineTo(canvas.width, canvas.height / 2);
@@ -1051,7 +1051,7 @@ function setupRecorder() {
         animationFrameId = requestAnimationFrame(drawVisualizer);
         analyser.getByteFrequencyData(dataArray);
 
-        canvasCtx.fillStyle = '#050811';
+        canvasCtx.fillStyle = '#f8fafc';
         canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
 
         const barWidth = (canvas.width / dataArray.length) * 2.5;
