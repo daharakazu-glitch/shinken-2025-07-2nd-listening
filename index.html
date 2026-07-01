@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025年度 高2 7月 進研模試 英語リスニング復習アプリ</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="2025年度 2年7月 進研模試の英語リスニング大問1対策・復習用アプリケーション。スクリプト・日本語訳・詳細解説・音声再生速度コントロール・シャドーイング用音声録音機能を搭載。">
+    <meta name="keywords" content="進研模試, 英語リスニング, 高校2年, リスニング対策, シャドーイング, 音声録音, 模試復習">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom Style Sheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="app-sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <span class="logo-icon"><i class="fa-solid fa-graduation-cap"></i></span>
+                    <span class="logo-text">Shinken Review</span>
+                </div>
+                <div class="subtitle">2025 高2 7月 英語リスニング</div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <button class="nav-btn active" data-tab="dashboard" id="btn-tab-dashboard">
+                    <i class="fa-solid fa-chart-simple"></i> <span>ダッシュボード</span>
+                </button>
+                <button class="nav-btn" data-tab="part1" id="btn-tab-part1">
+                    <i class="fa-solid fa-comments"></i> <span>Part 1 (対話文)</span>
+                </button>
+                <button class="nav-btn" data-tab="part2" id="btn-tab-part2">
+                    <i class="fa-solid fa-file-audio"></i> <span>Part 2 (モノローグ)</span>
+                </button>
+                <button class="nav-btn" data-tab="part3" id="btn-tab-part3">
+                    <i class="fa-solid fa-people-arrows"></i> <span>Part 3 (対話・要約)</span>
+                </button>
+                <button class="nav-btn" data-tab="recorder" id="btn-tab-recorder">
+                    <i class="fa-solid fa-microphone-lines"></i> <span>シャドーイング録音</span>
+                </button>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <button id="btn-toggle-reference-pdf" class="btn btn-secondary btn-block">
+                    <i class="fa-solid fa-file-pdf"></i> 問題冊子を参照
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="app-main">
+            <!-- Top Header Bar -->
+            <header class="app-header">
+                <button class="menu-toggle" id="menu-toggle"><i class="fa-solid fa-bars"></i></button>
+                <h1 class="header-title" id="page-title">ダッシュボード</h1>
+                <div class="header-status">
+                    <div class="score-badge" id="global-score-badge">
+                        <span class="badge-label">正答率:</span>
+                        <span class="badge-val" id="correct-rate-val">0%</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Active Audio Player (Sticky Widget) -->
+            <section class="sticky-player-bar hide" id="player-bar">
+                <div class="player-container">
+                    <div class="player-info">
+                        <div class="track-icon"><i class="fa-solid fa-compact-disc fa-spin-slow"></i></div>
+                        <div>
+                            <div class="player-track-name" id="player-track-title">トラック 1 (Part 1)</div>
+                            <div class="player-subtitle" id="player-part-subtitle">No.1〜No.4 対話文聞き取り</div>
+                        </div>
+                    </div>
+                    
+                    <div class="player-controls">
+                        <div class="controls-row">
+                            <button class="player-btn" id="player-btn-prev" title="前の問題へ"><i class="fa-solid fa-backward-step"></i></button>
+                            <button class="player-btn btn-play-main" id="player-btn-play" title="再生/一時停止"><i class="fa-solid fa-play"></i></button>
+                            <button class="player-btn" id="player-btn-next" title="次の問題へ"><i class="fa-solid fa-forward-step"></i></button>
+                        </div>
+                        
+                        <div class="timeline-row">
+                            <span class="time-display" id="player-time-current">0:00</span>
+                            <div class="progress-bar-wrapper">
+                                <input type="range" class="progress-slider" id="player-slider" min="0" max="100" value="0">
+                            </div>
+                            <span class="time-display" id="player-time-total">0:00</span>
+                        </div>
+                    </div>
+                    
+                    <div class="player-settings">
+                        <!-- Playback Speed Control -->
+                        <div class="speed-control">
+                            <i class="fa-solid fa-gauge-high"></i>
+                            <select id="player-speed-select" class="speed-select">
+                                <option value="0.8">0.8x (ゆっくり)</option>
+                                <option value="1.0" selected>1.0x (標準)</option>
+                                <option value="1.2">1.2x (少し速め)</option>
+                                <option value="1.5">1.5x (速め)</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Volume Controller -->
+                        <div class="volume-control">
+                            <button class="player-btn-mini" id="player-volume-btn"><i class="fa-solid fa-volume-high"></i></button>
+                            <input type="range" id="player-volume-slider" min="0" max="1" step="0.05" value="0.8" class="volume-slider">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Content Container -->
+            <div class="content-body">
+                
+                <!-- Tab: Dashboard -->
+                <div class="tab-pane active" id="pane-dashboard">
+                    <div class="welcome-hero">
+                        <div class="hero-content">
+                            <h2>進研模試 リスニング徹底復習</h2>
+                            <p>大問1（Part 1 / Part 2 / Part 3）の音声を聞き込み、問題練習、スクリプト分析、そして自分の声を録音して復習（シャドーイング）を行いましょう！</p>
+                        </div>
+                    </div>
+                    
+                    <div class="dashboard-stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon icon-purple"><i class="fa-solid fa-square-check"></i></div>
+                            <div class="stat-info">
+                                <div class="stat-val" id="stats-correct-ratio">0 / 9</div>
+                                <div class="stat-title">全問正当数</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon icon-teal"><i class="fa-solid fa-microphone"></i></div>
+                            <div class="stat-info">
+                                <div class="stat-val" id="stats-recordings-count">0</div>
+                                <div class="stat-title">録音した練習クリップ数</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon icon-orange"><i class="fa-solid fa-clock"></i></div>
+                            <div class="stat-info">
+                                <div class="stat-val" id="stats-current-speed">1.0x</div>
+                                <div class="stat-title">現在の再生速度</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-features">
+                        <h3>復習のステップ</h3>
+                        <div class="steps-grid">
+                            <div class="step-card">
+                                <div class="step-num">1</div>
+                                <h4>音声を聞いて解く</h4>
+                                <p>各Partのトラックを再生し、本番と同じように問題を解きます。Part 1 No.3ではイラストも参照できます。</p>
+                            </div>
+                            <div class="step-card">
+                                <div class="step-num">2</div>
+                                <h4>答え合わせと解説確認</h4>
+                                <p>「答え合わせ」ボタンを押すと、即座に採点。スクリプトや日本語訳、文法やポイントを網羅した詳細解説をチェックできます。</p>
+                            </div>
+                            <div class="step-card">
+                                <div class="step-num">3</div>
+                                <h4>シャドーイング練習</h4>
+                                <p>内蔵マイク録音機能を使って、音声を再生しながら自分で音読・シャドーイングし、その録音を聴き比べて発音や抑揚をブラッシュアップします。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab: Part 1 -->
+                <div class="tab-pane" id="pane-part1">
+                    <div class="part-intro">
+                        <h3>Part 1: 対話文の聞き取り (No.1〜No.4)</h3>
+                        <p>二人の人物による短い会話を聞いて、質問に対する答えとして最も適当なものを1つずつ選びます。会話と質問は<strong>1回のみ</strong>読まれます。</p>
+                    </div>
+                    <div class="questions-list" id="part1-questions-container">
+                        <!-- Dynamic Part 1 Questions -->
+                    </div>
+                </div>
+
+                <!-- Tab: Part 2 -->
+                <div class="tab-pane" id="pane-part2">
+                    <div class="part-intro">
+                        <h3>Part 2: モノローグ文の聞き取り (No.1〜No.3)</h3>
+                        <p>まとまった英文（鉛筆の歴史についてのスピーチ）を聞いて、3つの質問に対する答えとして最も適当なものを1つずつ選びます。英文と質問は<strong>2回</strong>読まれます。</p>
+                    </div>
+                    <div class="questions-list" id="part2-questions-container">
+                        <!-- Dynamic Part 2 Questions -->
+                    </div>
+                </div>
+
+                <!-- Tab: Part 3 -->
+                <div class="tab-pane" id="pane-part3">
+                    <div class="part-intro">
+                        <h3>Part 3: 長めの対話文と要約文 (No.1〜No.2)</h3>
+                        <p>祖母からの古い調理道具のプレゼントについての少し長めの会話を聞いて、2つの質問に答えます。会話は<strong>2回</strong>読まれます。</p>
+                        <p class="warning-text"><i class="fa-solid fa-circle-info"></i> No.2は自分で英語を記述する自由記述問題です（15語程度、指定語句を使用）。</p>
+                    </div>
+                    <div class="questions-list" id="part3-questions-container">
+                        <!-- Dynamic Part 3 Questions -->
+                    </div>
+                </div>
+
+                <!-- Tab: Recorder -->
+                <div class="tab-pane" id="pane-recorder">
+                    <div class="recorder-layout">
+                        <!-- Recording Console -->
+                        <div class="recorder-console">
+                            <div class="console-header">
+                                <h3>シャドーイング・録音スタジオ</h3>
+                                <p>マイクを使って自分の音読を録音し、ネイティブの発音と聞き比べて練習しましょう。</p>
+                            </div>
+                            
+                            <div class="visualizer-container">
+                                <canvas id="visualizer" width="500" height="120"></canvas>
+                                <div class="recording-time" id="recording-timer">00:00</div>
+                            </div>
+                            
+                            <div class="recorder-controls">
+                                <button class="record-btn" id="record-btn-start">
+                                    <i class="fa-solid fa-microphone"></i> <span>録音開始</span>
+                                </button>
+                                <button class="record-btn stop hide" id="record-btn-stop">
+                                    <i class="fa-solid fa-square"></i> <span>録音停止</span>
+                                </button>
+                            </div>
+
+                            <div class="recorder-tips">
+                                <h4>💡 シャドーイングのコツ</h4>
+                                <ul>
+                                    <li>音声を聞きながら、0.5秒ほど遅れて影のように後ろを追いかけて発音します。</li>
+                                    <li>スクリプトの表示/非表示を切り替えながら、テキストを見ずに言えるまで繰り返しましょう。</li>
+                                    <li>録音した自分の英語の「音の連結（リエゾン）」や「強弱のイントネーション」がネイティブと同じになっているか耳を澄ませてみましょう。</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Playlist of recordings -->
+                        <div class="recorder-playlist">
+                            <h3>マイ録音ライブラリ</h3>
+                            <div class="playlist-empty" id="playlist-empty-state">
+                                <i class="fa-solid fa-folder-open"></i>
+                                <p>まだ録音データがありません。<br>上のマイクボタンを押して録音を開始してください。</p>
+                            </div>
+                            <div class="playlist-items" id="recordings-list">
+                                <!-- Recorded items will appear here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- PDF Question Sheet Modal -->
+    <div class="modal-overlay hide" id="pdf-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>問題用紙（PDF切り出し画像）</h3>
+                <button class="modal-close" id="pdf-modal-close"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-pages-tabs">
+                    <button class="modal-tab-btn active" data-page="2">Page 2 (Part 1 No.1-2)</button>
+                    <button class="modal-tab-btn" data-page="3">Page 3 (Part 1 No.3-4)</button>
+                    <button class="modal-tab-btn" data-page="4">Page 4 (Part 2 & Part 3)</button>
+                </div>
+                <div class="pdf-image-viewer">
+                    <img src="images/page_2.png" alt="問題用紙 Page 2" class="pdf-page-img" id="pdf-modal-img">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Native Audio Elements for controller -->
+    <audio id="audio-track1" src="audio/track1.mp3" preload="auto"></audio>
+    <audio id="audio-track2" src="audio/track2.mp3" preload="auto"></audio>
+    <audio id="audio-track3" src="audio/track3.mp3" preload="auto"></audio>
+</body>
+</html>
